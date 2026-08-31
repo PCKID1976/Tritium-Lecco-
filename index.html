@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b5d3b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Presenze Agonistica</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#f4f7f5;--card:#fff;--text:#17211b;--muted:#69756d;--line:#dbe4de;--accent:#0b5d3b;--accent-soft:#e6f2eb;--danger:#a33737;--tritium:#eef4f1;--lecco:#f1f2f5;--shadow:0 10px 30px rgba(19,42,29,.08)}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:980px;margin:0 auto;padding:18px 14px 42px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}
+h1{margin:0;font-size:25px} .sub{margin:5px 0 0;color:var(--muted);font-size:14px}
+.tag{background:var(--accent-soft);color:var(--accent);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:800}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.toolbar{padding:14px;display:grid;grid-template-columns:1fr 130px auto;gap:10px;align-items:end;margin-bottom:14px}
+label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}
+select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;font-size:16px;color:var(--text)}
+button{min-height:44px;border:0;border-radius:11px;padding:10px 14px;font-weight:800;font-size:14px;cursor:pointer}
+.primary{background:var(--accent);color:white}.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}.danger{background:#fff;border:1px solid #efd2d2;color:var(--danger)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);background:#f8faf9;border-bottom:1px solid var(--line)}
+.week div{text-align:center;padding:9px 2px;font-size:11px;font-weight:900;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.day{min-height:92px;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:8px;text-align:left;background:white;font-weight:400;position:relative}
+.day:nth-child(7n){border-right:0}.empty{background:#fafbfa}.num{font-size:13px;font-weight:900}
+.loc{margin-top:8px;padding:5px 6px;border-radius:7px;font-size:11px;font-weight:900}.loc.tritium{background:var(--tritium)}.loc.lecco{background:var(--lecco)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{padding:14px}.stat .k{font-size:12px;color:var(--muted);font-weight:800}.stat .v{font-size:25px;font-weight:900;margin-top:3px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.actions button{flex:1;min-width:170px}
+dialog{width:min(460px,calc(100% - 22px));border:0;border-radius:18px;padding:0;box-shadow:0 20px 70px rgba(0,0,0,.25)}dialog::backdrop{background:rgba(13,22,17,.45)}
+.modal{padding:18px}.modal h2{margin:0 0 5px}.modal p{color:var(--muted);font-size:13px;margin:0 0 17px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choices button{min-height:64px;font-size:16px}.tritiumBtn{background:var(--accent);color:#fff}.leccoBtn{background:#29343e;color:#fff}.modalActions{display:flex;gap:8px;margin-top:12px}.modalActions button{flex:1}
+.toast{position:sticky;bottom:12px;margin-top:14px;background:#17211b;color:#fff;padding:11px 14px;border-radius:12px;font-size:13px;display:none}.toast.show{display:block}
+@media(max-width:650px){.app{padding:12px 8px 30px}.toolbar{grid-template-columns:1fr 105px}.toolbar button{grid-column:1/-1}.day{min-height:75px;padding:5px}.loc{font-size:9px;padding:4px}.summary{grid-template-columns:1fr 1fr}.summary .stat:first-child{grid-column:1/-1}.tag{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div><h1>Presenze Agonistica</h1><p class="sub">Clicca un giorno e indica solo dove sei stato: Tritium o Lecco.</p></div>
+    <div class="tag" id="syncTag">Connessione...</div>
+  </div>
+
+  <div class="panel toolbar">
+    <div><label for="month">Mese</label><select id="month"></select></div>
+    <div><label for="year">Anno</label><select id="year"></select></div>
+    <button id="today" type="button" class="secondary">Vai a oggi</button>
+  </div>
+
+  <div class="panel">
+    <div class="week"><div>LUN</div><div>MAR</div><div>MER</div><div>GIO</div><div>VEN</div><div>SAB</div><div>DOM</div></div>
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <div class="summary">
+    <div class="panel stat"><div class="k">Presenze totali</div><div id="tot" class="v">0</div></div>
+    <div class="panel stat"><div class="k">Tritium</div><div id="tri" class="v">0</div></div>
+    <div class="panel stat"><div class="k">Lecco</div><div id="lec" class="v">0</div></div>
+  </div>
+
+  <div class="actions">
+    <button id="pdf" type="button" class="primary">Esporta PDF</button>
+    <button id="clear" type="button" class="danger">Azzera mese</button>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+</div>
+
+<dialog id="dlg">
+  <div class="modal">
+    <h2 id="dlgTitle">Presenza</h2>
+    <p id="dlgDate"></p>
+    <div class="choices">
+      <button id="tritium" type="button" class="tritiumBtn">Tritium</button>
+      <button id="lecco" type="button" class="leccoBtn">Lecco</button>
+    </div>
+    <div class="modalActions">
+      <button id="remove" type="button" class="danger">Cancella presenza</button>
+      <button id="close" type="button" class="secondary">Chiudi</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+  getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, getDocs, writeBatch
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC9PJcAeSi00ImzpxFBwJTfutDe0w1Pq5A",
+  authDomain: "presenze-trtium---lecco.firebaseapp.com",
+  projectId: "presenze-trtium---lecco",
+  storageBucket: "presenze-trtium---lecco.firebasestorage.app",
+  messagingSenderId: "835575616543",
+  appId: "1:835575616543:web:1915458bc00c8a94f9b12a",
+  measurementId: "G-6L0HVZ19HC"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+(()=>{
+const MONTHS=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+const DAYS=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
+const month=document.getElementById("month"),year=document.getElementById("year"),grid=document.getElementById("grid");
+const dlg=document.getElementById("dlg"),toast=document.getElementById("toast");
+let selected=null;
+MONTHS.forEach((m,i)=>month.add(new Option(m,i)));
+for(let y=2025;y<=2032;y++)year.add(new Option(y,y));
+const now=new Date();month.value=now.getMonth();year.value=now.getFullYear();
+let state={};
+let unsubscribe=null;
+const syncTag=document.getElementById("syncTag");
+function monthKey(){return `${year.value}-${String(+month.value+1).padStart(2,"0")}`}
+function getMonth(){return state[monthKey()]||{}}
+function ensure(){if(!state[monthKey()])state[monthKey()]={};return state[monthKey()]}
+function setSync(text, ok=true){syncTag.textContent=text;syncTag.style.opacity=ok?"1":".75"}
+function subscribeMonth(){
+  if(unsubscribe) unsubscribe();
+  const key=monthKey();
+  state[key]={};
+  setSync("Sincronizzazione...");
+  unsubscribe=onSnapshot(collection(db,"mesi",key,"presenze"),snap=>{
+    const data={};
+    snap.forEach(d=>{data[d.id]=d.data().sede});
+    state[key]=data;
+    render();
+    setSync("Sincronizzato");
+  },err=>{
+    console.error(err);
+    setSync("Errore database",false);
+    show("Controlla le regole Firestore");
+  });
+}
+function iso(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`}
+function fmtDate(s){const [y,m,d]=s.split("-");return `${d}/${m}/${y}`}
+function show(msg){toast.textContent=msg;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2200)}
+function render(){
+ const y=+year.value,m=+month.value,days=new Date(y,m+1,0).getDate(),start=(new Date(y,m,1).getDay()+6)%7,data=getMonth();
+ grid.innerHTML="";
+ for(let i=0;i<start;i++){const x=document.createElement("div");x.className="day empty";grid.appendChild(x)}
+ for(let d=1;d<=days;d++){
+   const date=iso(y,m,d),loc=data[date];
+   const b=document.createElement("button");b.type="button";b.className="day";
+   b.innerHTML=`<div class="num">${d}</div>${loc?`<div class="loc ${loc.toLowerCase()}">${loc}</div>`:""}`;
+   b.addEventListener("click",()=>openDay(date));grid.appendChild(b);
+ }
+ const vals=Object.values(data),t=vals.length,tr=vals.filter(x=>x==="Tritium").length,le=vals.filter(x=>x==="Lecco").length;
+ document.getElementById("tot").textContent=t;document.getElementById("tri").textContent=tr;document.getElementById("lec").textContent=le;
+}
+function openDay(date){
+ selected=date;const dt=new Date(date+"T12:00:00");
+ document.getElementById("dlgDate").textContent=new Intl.DateTimeFormat("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(dt);
+ dlg.showModal();
+}
+async function setLoc(loc){
+  if(!selected)return;
+  dlg.close();setSync("Salvataggio...");
+  try{
+    await setDoc(doc(db,"mesi",monthKey(),"presenze",selected),{sede:loc,attivita:"Agonistica"});
+    show("Presenza salvata: "+loc);
+  }catch(e){console.error(e);setSync("Errore database",false);show("Errore nel salvataggio")}
+}
+document.getElementById("tritium").addEventListener("click",()=>setLoc("Tritium"));
+document.getElementById("lecco").addEventListener("click",()=>setLoc("Lecco"));
+document.getElementById("remove").addEventListener("click",async()=>{
+  if(selected){
+    dlg.close();setSync("Salvataggio...");
+    try{await deleteDoc(doc(db,"mesi",monthKey(),"presenze",selected));show("Presenza cancellata")}
+    catch(e){console.error(e);setSync("Errore database",false);show("Errore nella cancellazione")}
+  }else dlg.close();
+});
+document.getElementById("close").addEventListener("click",()=>dlg.close());
+month.addEventListener("change",subscribeMonth);year.addEventListener("change",subscribeMonth);
+document.getElementById("today").addEventListener("click",()=>{const n=new Date();month.value=n.getMonth();year.value=n.getFullYear();subscribeMonth()});
+document.getElementById("clear").addEventListener("click",async()=>{
+  if(!confirm(`Cancellare tutte le presenze di ${MONTHS[+month.value]} ${year.value}?`))return;
+  try{
+    const snap=await getDocs(collection(db,"mesi",monthKey(),"presenze"));
+    const batch=writeBatch(db);snap.forEach(x=>batch.delete(x.ref));await batch.commit();
+    show("Mese azzerato");
+  }catch(e){console.error(e);show("Errore nella cancellazione")}
+});
+
+document.getElementById("pdf").addEventListener("click",()=>{
+ const data=getMonth(),entries=Object.entries(data).sort((a,b)=>a[0].localeCompare(b[0]));
+ if(!entries.length){show("Inserisci almeno una presenza");return}
+ if(!window.jspdf || !window.jspdf.jsPDF){show("Libreria PDF non caricata");return}
+ const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+ const m=+month.value,y=+year.value;
+ doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Registro Presenze - Agonistica",14,18);
+ doc.setFont("helvetica","normal");doc.setFontSize(11);doc.text(`${MONTHS[m]} ${y}`,14,26);
+ const tr=entries.filter(([,l])=>l==="Tritium").length,le=entries.filter(([,l])=>l==="Lecco").length;
+ doc.setFontSize(10);doc.text(`Presenze totali: ${entries.length}   Tritium: ${tr}   Lecco: ${le}`,14,33);
+ const rows=entries.map(([date,loc])=>{
+   const dt=new Date(date+"T12:00:00");
+   return [fmtDate(date),DAYS[dt.getDay()],"Agonistica",loc];
+ });
+ doc.autoTable({
+   startY:39,
+   head:[["Data","Giorno","Attività","Sede"]],
+   body:rows,
+   theme:"grid",
+   styles:{font:"helvetica",fontSize:10,cellPadding:3},
+   headStyles:{fillColor:[43,61,51],textColor:255,fontStyle:"bold"},
+   columnStyles:{0:{cellWidth:30},1:{cellWidth:42},2:{cellWidth:55},3:{cellWidth:40}}
+ });
+ const finalY=doc.lastAutoTable.finalY+12;
+ doc.setFontSize(9);doc.text(`Generato il ${new Date().toLocaleDateString("it-IT")}`,14,finalY);
+ doc.save(`Presenze_Agonistica_${MONTHS[m]}_${y}.pdf`);
+ show("PDF generato");
+});
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
+subscribeMonth();
+})();
+</script>
+</body>
+</html>
