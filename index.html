@@ -8,7 +8,7 @@
 <title>Presenze Agonistica</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
-:root{--bg:#f4f7f5;--card:#fff;--text:#17211b;--muted:#69756d;--line:#dbe4de;--accent:#0b5d3b;--accent-soft:#e6f2eb;--danger:#a33737;--tritium:#eef4f1;--lecco:#f1f2f5;--shadow:0 10px 30px rgba(19,42,29,.08)}
+:root{--bg:#f4f7f5;--card:#fff;--text:#17211b;--muted:#69756d;--line:#dbe4de;--accent:#0b5d3b;--accent-soft:#e6f2eb;--danger:#a33737;--tritium:#eef4f1;--lecco:#f1f2f5;--gara:#fff3dc;--shadow:0 10px 30px rgba(19,42,29,.08)}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .app{max-width:980px;margin:0 auto;padding:18px 14px 42px}
@@ -26,11 +26,11 @@ button{min-height:44px;border:0;border-radius:11px;padding:10px 14px;font-weight
 .grid{display:grid;grid-template-columns:repeat(7,1fr)}
 .day{min-height:92px;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:8px;text-align:left;background:white;font-weight:400;position:relative}
 .day:nth-child(7n){border-right:0}.empty{background:#fafbfa}.num{font-size:13px;font-weight:900}
-.loc{margin-top:8px;padding:5px 6px;border-radius:7px;font-size:11px;font-weight:900}.loc.tritium{background:var(--tritium)}.loc.lecco{background:var(--lecco)}
+.loc{margin-top:8px;padding:5px 6px;border-radius:7px;font-size:11px;font-weight:900}.loc.tritium{background:var(--tritium)}.loc.lecco{background:var(--lecco)}.loc.gara{background:var(--gara)}
 .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{padding:14px}.stat .k{font-size:12px;color:var(--muted);font-weight:800}.stat .v{font-size:25px;font-weight:900;margin-top:3px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.actions button{flex:1;min-width:170px}
 dialog{width:min(460px,calc(100% - 22px));border:0;border-radius:18px;padding:0;box-shadow:0 20px 70px rgba(0,0,0,.25)}dialog::backdrop{background:rgba(13,22,17,.45)}
-.modal{padding:18px}.modal h2{margin:0 0 5px}.modal p{color:var(--muted);font-size:13px;margin:0 0 17px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choices button{min-height:64px;font-size:16px}.tritiumBtn{background:var(--accent);color:#fff}.leccoBtn{background:#29343e;color:#fff}.modalActions{display:flex;gap:8px;margin-top:12px}.modalActions button{flex:1}
+.modal{padding:18px}.modal h2{margin:0 0 5px}.modal p{color:var(--muted);font-size:13px;margin:0 0 17px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.choices button{min-height:64px;font-size:16px}.tritiumBtn{background:var(--accent);color:#fff}.leccoBtn{background:#29343e;color:#fff}.garaBtn{background:#8a5a00;color:#fff}.garaBox{display:none;margin-top:12px}.garaBox.show{display:block}.garaBox input{width:100%;min-height:46px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:16px}.garaBox button{width:100%;margin-top:8px;background:#8a5a00;color:#fff}.modalActions{display:flex;gap:8px;margin-top:12px}.modalActions button{flex:1}
 .toast{position:sticky;bottom:12px;margin-top:14px;background:#17211b;color:#fff;padding:11px 14px;border-radius:12px;font-size:13px;display:none}.toast.show{display:block}
 @media(max-width:650px){.app{padding:12px 8px 30px}.toolbar{grid-template-columns:1fr 105px}.toolbar button{grid-column:1/-1}.day{min-height:75px;padding:5px}.loc{font-size:9px;padding:4px}.summary{grid-template-columns:1fr 1fr}.summary .stat:first-child{grid-column:1/-1}.tag{display:none}}
 </style>
@@ -38,7 +38,7 @@ dialog{width:min(460px,calc(100% - 22px));border:0;border-radius:18px;padding:0;
 <body>
 <div class="app">
   <div class="top">
-    <div><h1>Presenze Agonistica</h1><p class="sub">Clicca un giorno e indica solo dove sei stato: Tritium o Lecco.</p></div>
+    <div><h1>Presenze Agonistica</h1><p class="sub">Clicca un giorno e indica Tritium, Lecco oppure Gara.</p></div>
     <div class="tag" id="syncTag">Connessione...</div>
   </div>
 
@@ -57,6 +57,7 @@ dialog{width:min(460px,calc(100% - 22px));border:0;border-radius:18px;padding:0;
     <div class="panel stat"><div class="k">Presenze totali</div><div id="tot" class="v">0</div></div>
     <div class="panel stat"><div class="k">Tritium</div><div id="tri" class="v">0</div></div>
     <div class="panel stat"><div class="k">Lecco</div><div id="lec" class="v">0</div></div>
+    <div class="panel stat"><div class="k">Gare</div><div id="gar" class="v">0</div></div>
   </div>
 
   <div class="actions">
@@ -74,6 +75,12 @@ dialog{width:min(460px,calc(100% - 22px));border:0;border-radius:18px;padding:0;
     <div class="choices">
       <button id="tritium" type="button" class="tritiumBtn">Tritium</button>
       <button id="lecco" type="button" class="leccoBtn">Lecco</button>
+      <button id="gara" type="button" class="garaBtn">Gara</button>
+    </div>
+    <div id="garaBox" class="garaBox">
+      <label for="garaNome">Nome della gara</label>
+      <input id="garaNome" type="text" maxlength="120" placeholder="Es. Campionato Italiano Coastal - Pesaro">
+      <button id="salvaGara" type="button">Salva gara</button>
     </div>
     <div class="modalActions">
       <button id="remove" type="button" class="danger">Cancella presenza</button>
@@ -125,7 +132,14 @@ function subscribeMonth(){
   setSync("Sincronizzazione...");
   unsubscribe=onSnapshot(collection(db,"mesi",key,"presenze"),snap=>{
     const data={};
-    snap.forEach(d=>{data[d.id]=d.data().sede});
+    snap.forEach(d=>{
+      const v=d.data();
+      data[d.id]={
+        tipo:v.tipo || (v.sede==="Gara" ? "Gara" : "Presenza"),
+        sede:v.sede || "",
+        nomeGara:v.nomeGara || ""
+      };
+    });
     state[key]=data;
     render();
     setSync("Sincronizzato");
@@ -138,34 +152,64 @@ function subscribeMonth(){
 function iso(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`}
 function fmtDate(s){const [y,m,d]=s.split("-");return `${d}/${m}/${y}`}
 function show(msg){toast.textContent=msg;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2200)}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function render(){
  const y=+year.value,m=+month.value,days=new Date(y,m+1,0).getDate(),start=(new Date(y,m,1).getDay()+6)%7,data=getMonth();
  grid.innerHTML="";
  for(let i=0;i<start;i++){const x=document.createElement("div");x.className="day empty";grid.appendChild(x)}
  for(let d=1;d<=days;d++){
-   const date=iso(y,m,d),loc=data[date];
+   const date=iso(y,m,d),entry=data[date];
    const b=document.createElement("button");b.type="button";b.className="day";
-   b.innerHTML=`<div class="num">${d}</div>${loc?`<div class="loc ${loc.toLowerCase()}">${loc}</div>`:""}`;
+   let label="";
+   if(entry){
+     if(entry.tipo==="Gara" || entry.sede==="Gara"){
+       label=`<div class="loc gara">Gara${entry.nomeGara?`<br>${escapeHtml(entry.nomeGara)}`:""}</div>`;
+     }else{
+       label=`<div class="loc ${String(entry.sede).toLowerCase()}">${escapeHtml(entry.sede)}</div>`;
+     }
+   }
+   b.innerHTML=`<div class="num">${d}</div>${label}`;
    b.addEventListener("click",()=>openDay(date));grid.appendChild(b);
  }
- const vals=Object.values(data),t=vals.length,tr=vals.filter(x=>x==="Tritium").length,le=vals.filter(x=>x==="Lecco").length;
- document.getElementById("tot").textContent=t;document.getElementById("tri").textContent=tr;document.getElementById("lec").textContent=le;
+ const vals=Object.values(data),t=vals.length,
+ tr=vals.filter(x=>x.sede==="Tritium").length,
+ le=vals.filter(x=>x.sede==="Lecco").length,
+ ga=vals.filter(x=>x.tipo==="Gara" || x.sede==="Gara").length;
+ document.getElementById("tot").textContent=t;document.getElementById("tri").textContent=tr;document.getElementById("lec").textContent=le;document.getElementById("gar").textContent=ga;
 }
 function openDay(date){
  selected=date;const dt=new Date(date+"T12:00:00");
  document.getElementById("dlgDate").textContent=new Intl.DateTimeFormat("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(dt);
+ const entry=getMonth()[date];
+ const box=document.getElementById("garaBox"),input=document.getElementById("garaNome");
+ input.value=(entry && (entry.tipo==="Gara" || entry.sede==="Gara")) ? (entry.nomeGara||"") : "";
+ box.classList.remove("show");
  dlg.showModal();
 }
 async function setLoc(loc){
   if(!selected)return;
   dlg.close();setSync("Salvataggio...");
   try{
-    await setDoc(doc(db,"mesi",monthKey(),"presenze",selected),{sede:loc,attivita:"Agonistica"});
+    await setDoc(doc(db,"mesi",monthKey(),"presenze",selected),{tipo:"Presenza",sede:loc,nomeGara:"",attivita:"Agonistica"});
     show("Presenza salvata: "+loc);
   }catch(e){console.error(e);setSync("Errore database",false);show("Errore nel salvataggio")}
 }
 document.getElementById("tritium").addEventListener("click",()=>setLoc("Tritium"));
 document.getElementById("lecco").addEventListener("click",()=>setLoc("Lecco"));
+document.getElementById("gara").addEventListener("click",()=>{
+  document.getElementById("garaBox").classList.add("show");
+  document.getElementById("garaNome").focus();
+});
+document.getElementById("salvaGara").addEventListener("click",async()=>{
+  if(!selected)return;
+  const nome=document.getElementById("garaNome").value.trim();
+  if(!nome){show("Scrivi il nome della gara");return}
+  dlg.close();setSync("Salvataggio...");
+  try{
+    await setDoc(doc(db,"mesi",monthKey(),"presenze",selected),{tipo:"Gara",sede:"Gara",nomeGara:nome,attivita:"Agonistica"});
+    show("Gara salvata: "+nome);
+  }catch(e){console.error(e);setSync("Errore database",false);show("Errore nel salvataggio")}
+});
 document.getElementById("remove").addEventListener("click",async()=>{
   if(selected){
     dlg.close();setSync("Salvataggio...");
@@ -193,20 +237,21 @@ document.getElementById("pdf").addEventListener("click",()=>{
  const m=+month.value,y=+year.value;
  doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Registro Presenze - Agonistica",14,18);
  doc.setFont("helvetica","normal");doc.setFontSize(11);doc.text(`${MONTHS[m]} ${y}`,14,26);
- const tr=entries.filter(([,l])=>l==="Tritium").length,le=entries.filter(([,l])=>l==="Lecco").length;
- doc.setFontSize(10);doc.text(`Presenze totali: ${entries.length}   Tritium: ${tr}   Lecco: ${le}`,14,33);
- const rows=entries.map(([date,loc])=>{
+ const tr=entries.filter(([,v])=>v.sede==="Tritium").length,le=entries.filter(([,v])=>v.sede==="Lecco").length,ga=entries.filter(([,v])=>v.tipo==="Gara"||v.sede==="Gara").length;
+ doc.setFontSize(10);doc.text(`Presenze totali: ${entries.length}   Tritium: ${tr}   Lecco: ${le}   Gare: ${ga}`,14,33);
+ const rows=entries.map(([date,v])=>{
    const dt=new Date(date+"T12:00:00");
-   return [fmtDate(date),DAYS[dt.getDay()],"Agonistica",loc];
+   const isGara=v.tipo==="Gara"||v.sede==="Gara";
+   return [fmtDate(date),DAYS[dt.getDay()],"Agonistica",isGara?"Gara":v.sede,isGara?(v.nomeGara||""):""];
  });
  doc.autoTable({
    startY:39,
-   head:[["Data","Giorno","Attività","Sede"]],
+   head:[["Data","Giorno","Attività","Sede","Nome gara"]],
    body:rows,
    theme:"grid",
    styles:{font:"helvetica",fontSize:10,cellPadding:3},
    headStyles:{fillColor:[43,61,51],textColor:255,fontStyle:"bold"},
-   columnStyles:{0:{cellWidth:30},1:{cellWidth:42},2:{cellWidth:55},3:{cellWidth:40}}
+   columnStyles:{0:{cellWidth:26},1:{cellWidth:34},2:{cellWidth:38},3:{cellWidth:28},4:{cellWidth:58}}
  });
  const finalY=doc.lastAutoTable.finalY+12;
  doc.setFontSize(9);doc.text(`Generato il ${new Date().toLocaleDateString("it-IT")}`,14,finalY);
